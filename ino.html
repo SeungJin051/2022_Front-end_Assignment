@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>토양 자동 급수 장치</title>
+    <link rel="stylesheet" href="index.css"> <!-- 외부 css를 받는다 -->
+    <link rel="icon" href="img/favicon.jpg" type="image/x-icon"> <!-- favicon 설정 -->
+    <script src="https://kit.fontawesome.com/92188d0589.js" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+</head>
+<style>
+  body {
+    margin: 0 auto;
+    height: 350vh;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: bold;
+    font-size: 22px;
+    background-color: #ddd;
+  }
+  .code {
+    margin-left: 40%;
+    margin-top: 5%;
+  }
+
+  .ex {
+    color: rgb(255, 137, 137);
+  }
+</style>
+<body>
+  
+      <div class="code">
+            #include &ltLiquidCrystal_I2C.h> <span class="ex">/*LiquidCrystal_I2C*/</span> <br>
+              #define Humi      A0 <br>
+              #define ledRed    10 <br>
+              #define ledGreen  9 <br>
+              #define ledBlue   11 <br>
+              
+              #define LCD_I2C_ADDR 0x27 <br>
+              
+              int relay = 8; <br>
+              int soilHumidity; <br>
+              LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2); <br> <br>
+              
+              <span class="ex">/*LCD 습도 프린트하기*/</span><br> 
+              void printLcd() { <br>
+                lcd.clear(); <br>
+                lcd.backlight(); <br>
+                lcd.setCursor(0, 0); <br>
+                lcd.print("Present: 50%"); <br>
+                lcd.setCursor(0, 1); <br>
+                lcd.print("Moisture: "); <br>
+                lcd.print(soilHumidity); <br>
+                lcd.print("%"); <br>
+              } <br> <br>
+              
+              <span class="ex">/*LCD 초기화하기*/</span> <br>
+              void initLcd() { <br>
+                lcd.init(); <br>
+                lcd.backlight(); <br>
+                lcd.setCursor(0, 0); <br>
+              } <br> <br>
+              
+              <span class="ex">/*토양습도 계산하기*/</span> <br>
+              void calcSoilHumidity() { <br>
+                soilHumidity = map(analogRead(Humi), 1000, 400, 0, 100); <br>
+                if(soilHumidity > 100) soilHumidity = 100; <br>
+                else if(soilHumidity < 0) soilHumidity = 0; <br>
+              } <br> <br>
+              
+              void writeRGB(bool R, bool G, bool B) { <br>
+                digitalWrite(ledRed, R); <br>
+                digitalWrite(ledGreen, G); <br>
+                digitalWrite(ledBlue, B); <br>
+              } <br> <br>
+              
+              void sensor() { <br> 
+                  <span class="ex">/* 습도가 낮아지면, 펌프가 동작되고 <br>
+                  습도가 높아지면, 펌프가 꺼집니다. */</span>
+                   <br>
+                if (soilHumidity < 20)  { <br>
+                  writeRGB(HIGH, LOW, LOW); <br>
+                  delay(300); <br>
+                  digitalWrite(relay, LOW); <br>
+                  delay(400);   <br>
+                  digitalWrite(relay, HIGH); <br>
+                  delay(2000); <br>
+                } else { <br>
+                  writeRGB(HIGH, LOW, HIGH); <br>
+                  digitalWrite(relay, HIGH); <br>
+                  delay(2000); <br>
+                } <br>
+              } <br> <br>
+              
+              void setup() { <br>
+                pinMode(ledRed, OUTPUT); <br>
+                pinMode(ledGreen, OUTPUT); <br>
+                pinMode(ledBlue, OUTPUT); <br>
+                pinMode(relay, OUTPUT); <br> <br>
+              
+                digitalWrite(ledRed, LOW); <br>
+                digitalWrite(ledGreen, LOW); <br>
+                digitalWrite(ledBlue, LOW); <br> <br>
+                
+                initLcd(); <br> <br>
+                
+                delay(2000); <br>
+              } <br> <br>
+              
+              void loop() { <br>
+                calcSoilHumidity(); <br>
+                printLcd(); <br>
+                sensor(); <br>
+              }  <br> <br>
+              
+      </div>
+    <script src="main.js"></script>
+</body>
+</html>
+
+<!-- LCD는 액정 디스플레이 또는 액정 표시장치를 의미하며 뒷면에 빛을 내는 백라이트(backlight)를 배치하고 앞면에 액정을 두어 전기신호에 따라 빛을 차단하거나 통과시키는 방식으로 문자나 숫자 등을 표시하는 장치입니다. 현재 프로젝트에서는 16x2로 출력하며 1줄에는 식물의 최적 습도를 고정적으로 출력하고 2줄에는 현재 토양의 습도를 출력합니다.</div>
+ -->
