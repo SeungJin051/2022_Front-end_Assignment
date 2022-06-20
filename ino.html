@@ -32,91 +32,103 @@
 </style>
 <body>
   
-      <div class="code">
-            #include &ltLiquidCrystal_I2C.h> <span class="ex">/*LiquidCrystal_I2C*/</span> <br>
-              #define Humi      A0 <br>
-              #define ledRed    10 <br>
-              #define ledGreen  9 <br>
-              #define ledBlue   11 <br>
-              
-              #define LCD_I2C_ADDR 0x27 <br>
-              
-              int relay = 8; <br>
-              int soilHumidity; <br>
-              LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2); <br> <br>
-              
-              <span class="ex">/*LCD 습도 프린트하기*/</span><br> 
-              void printLcd() { <br>
-                lcd.clear(); <br>
-                lcd.backlight(); <br>
-                lcd.setCursor(0, 0); <br>
-                lcd.print("Present: 50%"); <br>
-                lcd.setCursor(0, 1); <br>
-                lcd.print("Moisture: "); <br>
-                lcd.print(soilHumidity); <br>
-                lcd.print("%"); <br>
-              } <br> <br>
-              
-              <span class="ex">/*LCD 초기화하기*/</span> <br>
-              void initLcd() { <br>
-                lcd.init(); <br>
-                lcd.backlight(); <br>
-                lcd.setCursor(0, 0); <br>
-              } <br> <br>
-              
-              <span class="ex">/*토양습도 계산하기*/</span> <br>
-              void calcSoilHumidity() { <br>
-                soilHumidity = map(analogRead(Humi), 1000, 400, 0, 100); <br>
-                if(soilHumidity > 100) soilHumidity = 100; <br>
-                else if(soilHumidity < 0) soilHumidity = 0; <br>
-              } <br> <br>
-              
-              void writeRGB(bool R, bool G, bool B) { <br>
-                digitalWrite(ledRed, R); <br>
-                digitalWrite(ledGreen, G); <br>
-                digitalWrite(ledBlue, B); <br>
-              } <br> <br>
-              
-              void sensor() { <br> 
-                  <span class="ex">/* 습도가 낮아지면, 펌프가 동작되고 <br>
-                  습도가 높아지면, 펌프가 꺼집니다. */</span>
-                   <br>
-                if (soilHumidity < 20)  { <br>
-                  writeRGB(HIGH, LOW, LOW); <br>
-                  delay(300); <br>
-                  digitalWrite(relay, LOW); <br>
-                  delay(400);   <br>
-                  digitalWrite(relay, HIGH); <br>
-                  delay(2000); <br>
-                } else { <br>
-                  writeRGB(HIGH, LOW, HIGH); <br>
-                  digitalWrite(relay, HIGH); <br>
-                  delay(2000); <br>
-                } <br>
-              } <br> <br>
-              
-              void setup() { <br>
-                pinMode(ledRed, OUTPUT); <br>
-                pinMode(ledGreen, OUTPUT); <br>
-                pinMode(ledBlue, OUTPUT); <br>
-                pinMode(relay, OUTPUT); <br> <br>
-              
-                digitalWrite(ledRed, LOW); <br>
-                digitalWrite(ledGreen, LOW); <br>
-                digitalWrite(ledBlue, LOW); <br> <br>
-                
-                initLcd(); <br> <br>
-                
-                delay(2000); <br>
-              } <br> <br>
-              
-              void loop() { <br>
-                calcSoilHumidity(); <br>
-                printLcd(); <br>
-                sensor(); <br>
-              }  <br> <br>
-              
-      </div>
+      <pre>
+                   #include <LiquidCrystal_I2C.h>
+
+                #define Humi      A0        //토양 수분 감지 센서
+                #define ledRed    10        //Red LED
+                #define ledGreen  9         //Green LED
+                #define ledBlue   11        //Blue LED
+                #define LCD_I2C_ADDR 0x27   //LED 모니터
+
+                int relay = 8;              //릴레이
+                int soilHumidity;
+                LiquidCrystal_I2C lcd(LCD_I2C_ADDR, 16, 2);
+                //--------------------------------------------------------------------
+                //함수 원형
+                void printLcd();    //LCD화면 프린트 함수
+                void initLcd();     //LCD 초기화 함수
+                void calcSoilHumidity();  //토양 수분 수치 변경 함수(0~100%)
+                void writeRGB(bool R, bool G, bool B);  //RGB LED 함수
+                void sensor();      //펌프동작, LED출력 함수
+                //--------------------------------------------------------------------
+                void setup() {
+                  pinMode(ledRed, OUTPUT);
+                  pinMode(ledGreen, OUTPUT);
+                  pinMode(ledBlue, OUTPUT);
+                  pinMode(relay, OUTPUT);
+
+                  digitalWrite(ledRed, LOW);
+                  digitalWrite(ledGreen, LOW);
+                  digitalWrite(ledBlue, LOW);
+
+                  initLcd();
+                  delay(2000);
+                }
+                //--------------------------------------------------------------------
+                void loop() {
+                  calcSoilHumidity();
+                  printLcd();
+                  sensor();
+                }
+                //--------------------------------------------------------------------
+                //LCD화면 프린트 함수
+                void printLcd() {
+                  lcd.clear();          //화면 지우기
+                  lcd.backlight();      //백라이트 켜기
+                  lcd.setCursor(0, 0);  //0,0부터 출력 시작
+                  lcd.print("Moisture: ");
+                  lcd.print(soilHumidity);  //soilHumidity: 현재 수분
+                  lcd.print("%");
+                  lcd.setCursor(0, 1);  //0,1부터 출력 시작
+                  lcd.print("Present: 70%");
+                }
+                //--------------------------------------------------------------------
+                //LCD 초기화 함수
+                void initLcd() {
+                  lcd.init();           //LCD 초기화
+                  lcd.backlight();      //백라이트 켜기
+                  lcd.setCursor(0, 0);  //0,0부터 출력 시작
+                }
+                //--------------------------------------------------------------------
+                //토양 수분 수치 변경 함수(0~100%)
+                void calcSoilHumidity() {
+                  //현재 수분양을 0~100 수치로 변경
+                  soilHumidity = map(analogRead(Humi), 1000, 400, 0, 100);
+                  //수분양이 100을 초과할 때에는 값을 100으로 고정
+                  if(soilHumidity > 100) soilHumidity = 100;
+                  //수분양이 0 미만일 때에는 값을 0으로 고정
+                  else if(soilHumidity < 0) soilHumidity = 0;
+                }
+                //--------------------------------------------------------------------
+                //RGB LED 함수
+                void writeRGB(bool R, bool G, bool B) {
+                  digitalWrite(ledRed, R);
+                  digitalWrite(ledGreen, G);
+                  digitalWrite(ledBlue, B);
+                }
+                //--------------------------------------------------------------------
+                //펌프동작, LED출력 함수
+                void sensor() {
+                  if (soilHumidity < 70)  {
+                    //습도가 20미만이면 Red LED가 켜지고
+                    writeRGB(HIGH, LOW, LOW);
+                    //2초 동안 펌프가 동작됨
+                    digitalWrite(relay, LOW);
+                    delay(2000);
+                    //시간이 지나면 다시 펌프 동작을 멈추고 10초 동안 대기
+                    digitalWrite(relay, HIGH);
+                    delay(10000);
+                  } else {
+                    //그렇지 않으면 Green LED가 켜지고
+                    writeRGB(LOW, HIGH, LOW);
+                    //펌프가 동작하지 않고, 10초동안 대기
+                    digitalWrite(relay, HIGH);
+                    delay(10000);
+                  }
+                }
+//--------------------------------------------------------------------
+      </pre>
     <script src="main.js"></script>
 </body>
 </html>
